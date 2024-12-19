@@ -18,24 +18,28 @@
       <a href=lvl4.php?file=2.php><button>The Other Button!</button></a>
       </div>
       
-      <?php     
-        echo "</br></br>";
+      <?php
+    echo "</br></br>";
+    $allowed_directory = 'safe_files/';
+    $allowed_files = ['1.php', '2.php']; 
 
-        if (isset( $_GET[ 'file' ])) 
-        {
-          $secure4 = $_GET[ 'file' ];
-         
-            if ($secure4!="1.php" && $secure4!="2.php") 
-            {
-              $secure4=substr($secure4, 0,-4);
+    if (isset($_GET['file'])) {
+        $secure4 = basename($_GET['file']); 
+        if (in_array($secure4, $allowed_files)) {
+            $filepath = $allowed_directory . $secure4;
+
+            if (file_exists($filepath)) {
+                include($filepath);
+                echo "<div align='center'><b><h5>Archivo incluido: " . htmlspecialchars($secure4) . "</h5></b></div>";
+            } else {
+                echo "<div align='center'><b><h5>Archivo no encontrado</h5></b></div>";
             }
-            
-            if (isset($secure4)) 
-            {        
-              include($secure4);              
-            }
-        }              
-      ?>
+        } else {
+            echo "<div align='center'><b><h5>Archivo no permitido</h5></b></div>";
+        }
+    }
+?>
+
    </body>
 </html>
 
