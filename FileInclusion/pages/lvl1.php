@@ -18,14 +18,29 @@
       </div>
       
       <?php
-        echo "</br></br>";
+    echo "</br></br>";
+    
+    $allowed_directory = 'safe_files/';
+    
+    $allowed_files = ['file1.php', 'file2.php']; 
+
+    if (isset($_GET['file'])) {
+        $file = basename($_GET['file']);
         
-        if (isset( $_GET[ 'file' ]))        
-        {
-          @include($_GET[ 'file' ]);
-          echo"<div align='center'><b><h5>".$_GET[ 'file' ]."</h5></b></div> ";       
+        if (in_array($file, $allowed_files)) { 
+            $filepath = $allowed_directory . $file;
+
+            if (file_exists($filepath)) {
+                @include($filepath);
+                echo "<div align='center'><b><h5>" . htmlspecialchars($file) . "</h5></b></div>";
+            } else {
+                echo "<div align='center'><b><h5>Archivo no encontrado</h5></b></div>";
+            }
+        } else {
+            echo "<div align='center'><b><h5>Archivo no permitido</h5></b></div>";
         }
-      ?>
+    }
+?>
    </body>
 </html>
 
