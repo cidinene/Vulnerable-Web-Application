@@ -19,10 +19,13 @@
 
 <?php 
 if (isset($_GET["username"])) {
-    $user = str_replace("<", "", $_GET["username"]);
-    echo "Your name is "."$user";
+    
+    $user = htmlspecialchars($_GET["username"], ENT_QUOTES, 'UTF-8');
+    
+    echo "Your name is " . $user;
 }
- ?>
+?>
+
 
 </body>
 </html>
