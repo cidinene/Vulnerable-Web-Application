@@ -27,43 +27,37 @@ if (isset($_POST["submit"])) {
     }
 
     $uploadOk = 1; 
-    $allowed_types = ['png', 'jpg', 'jpeg', 'gif']; // Tipos de archivo permitidos
-    $max_file_size = 2 * 1024 * 1024; // Tamaño máximo permitido (2 MB)
+    $allowed_types = ['png', 'jpg', 'jpeg', 'gif'];
+    $max_file_size = 2 * 1024 * 1024; // 2 MB
 
-   
     if (!isset($_FILES["file"]["tmp_name"]) || !is_uploaded_file($_FILES["file"]["tmp_name"])) {
         echo "Error: No se seleccionó un archivo válido.";
         $uploadOk = 0;
     }
 
     $file_info = pathinfo($_FILES["file"]["name"]);
-    $file_name = $file_info["filename"];
+    $file_name = basename($file_info["filename"]);
     $file_extension = strtolower($file_info["extension"]);
 
-    
     if (!in_array($file_extension, $allowed_types)) {
         echo "Error: Tipo de archivo no permitido. Solo se permiten PNG, JPG, JPEG y GIF.";
         $uploadOk = 0;
     }
 
-    
     if ($_FILES["file"]["size"] > $max_file_size) {
         echo "Error: El archivo excede el tamaño máximo permitido (2 MB).";
         $uploadOk = 0;
     }
 
-    
     $check = getimagesize($_FILES["file"]["tmp_name"]);
     if ($check === false) {
         echo "Error: El archivo no es una imagen válida.";
         $uploadOk = 0;
     }
 
-    
-    $new_file_name = uniqid() . "." . $file_extension; 
+    $new_file_name = uniqid() . "." . $file_extension;
     $target_file = $target_dir . $new_file_name;
 
-    
     if ($uploadOk === 1) {
         if (move_uploaded_file($_FILES["file"]["tmp_name"], $target_file)) {
             echo "Archivo subido exitosamente: /uploads/" . htmlspecialchars($new_file_name);
@@ -76,7 +70,9 @@ if (isset($_POST["submit"])) {
 } else {
     echo "Error: No se recibió un archivo.";
 }
+
 ?>
+
 
 </body>
 </html>
