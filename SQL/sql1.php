@@ -20,12 +20,15 @@
 	</div>
 
 
-<?php 
+<?php
 
-$servername = "localhost";
-$username = "root";
-$password = "";
-$db = "1ccb8097d0e9ce9f154608be60224c7c";
+$config = require __DIR__ . '/config.php';
+
+
+$servername = $config['servername'];
+$username = $config['username'];
+$password = $config['password'];
+$db = $config['database'];
 
 
 $conn = mysqli_connect($servername, $username, $password, $db);
@@ -36,11 +39,11 @@ if (!$conn) {
 }
 
 if (isset($_POST["submit"])) {
-   
+    
     if (isset($_POST["firstname"]) && !empty(trim($_POST["firstname"]))) {
-        $firstname = trim($_POST["firstname"]); 
+        $firstname = trim($_POST["firstname"]);
 
-        
+       
         $stmt = $conn->prepare("SELECT lastname FROM users WHERE firstname = ?");
         $stmt->bind_param("s", $firstname); 
         $stmt->execute();
@@ -66,6 +69,7 @@ if (isset($_POST["submit"])) {
 
 mysqli_close($conn);
 ?>
+
 
 </body>
 </html>
