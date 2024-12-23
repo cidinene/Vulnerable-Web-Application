@@ -20,40 +20,60 @@
 	</div>
 
 <?php
-	$servername = "localhost";
-	$username = "root";
-	$password = "";
-	$db = "1ccb8097d0e9ce9f154608be60224c7c";
+require __DIR__ . '/vendor/autoload.php';
 
-	// Create connection
-	$conn = new mysqli($servername, $username, $password,$db);
 
-	// Check connection
-	if ($conn->connect_error) {
-	    die("Connection failed: " . $conn->connect_error);
-	} 
-	//echo "Connected successfully";
-	if(isset($_POST["submit"])){
-		$number = $_POST['number'];
-		$query = "SELECT bookname,authorname FROM books WHERE number = $number"; //Int
-		$result = mysqli_query($conn,$query);
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
 
-		if (!$result) { //Check result
-		    $message  = 'Invalid query: ' . mysql_error() . "\n";
-		    $message .= 'Whole query: ' . $query;
-		    die($message);
-		}
 
-		while ($row = mysqli_fetch_assoc($result)) {
-			echo "<hr>";
-		    echo $row['bookname']." ----> ".$row['authorname'];    
-		}
+$servername = $_ENV['DB_SERVERNAME'];
+$username = $_ENV['DB_USERNAME'];
+$password = $_ENV['DB_PASSWORD'];
+$db = $_ENV['DB_DATABASE'];
 
-		if(mysqli_num_rows($result) <= 0)
-			echo "0 result";
-	}
 
-?> 
+$conn = new mysqli($servername, $username, $password, $db);
+
+
+if ($conn->connect_error) {
+    die("Error en la conexión a la base de datos: " . $conn->connect_error);
+}
+
+if (isset($_POST["submit"])) {
+   
+    if (isset($_POST["number"]) && is_numeric($_POST["number"])) {
+        $number = intval($_POST["number"]); 
+
+        
+        $stmt = $conn->prepare("SELECT bookname, authorname FROM books WHERE number = ?");
+        $stmt->bind_param("i", $number); 
+        $stmt->execute();
+
+        
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            
+            while ($row = $result->fetch_assoc()) {
+                echo "<hr>";
+                echo htmlspecialchars($row['bookname']) . " ----> " . htmlspecialchars($row['authorname']);
+            }
+        } else {
+            echo "No se encontraron resultados.";
+        }
+
+        
+        $stmt->close();
+    } else {
+        echo "Por favor, ingrese un número válido.";
+    }
+}
+
+
+$conn->close();
+?>
+
 
 </body>
 </html>
