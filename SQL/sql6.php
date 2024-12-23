@@ -18,32 +18,51 @@
 	</div>
 	<!--Admin password is in the secret table. I hope, anyone doesn't see it.-->
 <?php
-	$servername = "localhost";
-	$username = "root";
-	$password = "";
-	$db = "1ccb8097d0e9ce9f154608be60224c7c";
-	// Create connection
-	$conn = new mysqli($servername, $username, $password,$db);
+require __DIR__ . '/vendor/autoload.php';
 
-	// Check connection
-	if ($conn->connect_error) {
-	    die("Connection failed: " . $conn->connect_error);
-	} 
-	//echo "Connected successfully";
-	$source = "";
-	if(isset($_GET["submit"])){
-		$number = $_GET['number'];
-		$query = "SELECT bookname,authorname FROM books WHERE number = '$number'";
-		$result = mysqli_query($conn,$query);
-		$row = @mysqli_num_rows($result);
-		echo "<hr>";
-		if($row > 0){
-			echo "<pre>There is a book with this index.</pre>";
-		}else{
-			echo "Not found!";
-		}
-	}
 
-?> 
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
+$servername = $_ENV['DB_SERVERNAME'];
+$username = $_ENV['DB_USERNAME'];
+$password = $_ENV['DB_PASSWORD'];
+$db = $_ENV['DB_DATABASE'];
+
+
+$conn = new mysqli($servername, $username, $password, $db);
+
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+if (isset($_GET["submit"])) {
+    if (isset($_GET['number']) && is_numeric($_GET['number'])) {
+        $number = intval($_GET['number']); 
+
+       
+        $stmt = $conn->prepare("SELECT bookname, authorname FROM books WHERE number = ?");
+        $stmt->bind_param("i", $number); 
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+       
+        if ($result->num_rows > 0) {
+            echo "<hr>";
+            echo "<pre>There is a book with this index.</pre>";
+        } else {
+            echo "Not found!";
+        }
+
+        $stmt->close();
+    } else {
+        echo "Please enter a valid number.";
+    }
+}
+
+$conn->close();
+?>
+
 </body>
 </html>
