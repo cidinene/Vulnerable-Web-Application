@@ -37,33 +37,6 @@ $password = $_ENV['DB_PASSWORD'];
 $db = $_ENV['DB_DATABASE'];
 
 
-session_start();
-if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
-   
-    if (isset($_POST['login'])) {
-        $input_username = $_POST['username'];
-        $input_password = $_POST['password'];
-
-        
-        if ($input_username === $_ENV['APP_USERNAME'] && password_verify($input_password, $_ENV['APP_PASSWORD'])) {
-            $_SESSION['authenticated'] = true;
-        } else {
-            echo "Invalid credentials.";
-        }
-    }
-
-    
-    if (!isset($_SESSION['authenticated'])) {
-        echo '<form method="POST" action="">
-                <label>Username: </label><input type="text" name="username" required><br>
-                <label>Password: </label><input type="password" name="password" required><br>
-                <input type="submit" name="login" value="Login">
-              </form>';
-        exit;
-    }
-}
-
-
 $conn = new mysqli($servername, $username, $password, $db);
 
 
@@ -98,6 +71,7 @@ if (isset($_POST["submit"])) {
 
 $conn->close();
 ?>
+
 
 
 
