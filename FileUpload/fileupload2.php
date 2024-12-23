@@ -19,25 +19,63 @@
 	</div>
 <?php
 
-// Check if image file is a actual image or fake image
-if(isset($_POST["submit"])) {
-	$target_dir = "uploads/";
-	$target_file = $target_dir . basename($_FILES["file"]["name"]);
-	$uploadOk = 1;
-	$imageFileType = strtolower(pathinfo($target_file,PATHINFO_EXTENSION));
-	$type = $_FILES["file"]["type"];
+if (isset($_POST["submit"])) {
+    
+    $target_dir = "uploads/";
+    if (!is_dir($target_dir)) {
+        mkdir($target_dir, 0755, true); 
+    }
 
-    if($type != "image/png" && $type != "image/jpeg" ){
-        echo "JPG, JPEG, PNG & GIF files are allowed.";
+    $uploadOk = 1; 
+    $allowed_types = ['image/png', 'image/jpeg']; 
+    $max_file_size = 2 * 1024 * 1024; 
+
+    
+    if (!isset($_FILES["file"]["tmp_name"]) || !is_uploaded_file($_FILES["file"]["tmp_name"])) {
+        echo "Error: No se seleccionó un archivo válido.";
         $uploadOk = 0;
     }
-    
-    if($uploadOk == 1){
-        move_uploaded_file($_FILES["file"]["tmp_name"], $target_file);
-        echo "File uploaded /uploads/".$_FILES["file"]["name"];
+
+   
+    $file_type = mime_content_type($_FILES["file"]["tmp_name"]);
+    if (!in_array($file_type, $allowed_types)) {
+        echo "Error: Solo se permiten archivos JPG, JPEG y PNG.";
+        $uploadOk = 0;
     }
+
+    
+    if ($_FILES["file"]["size"] > $max_file_size) {
+        echo "Error: El archivo excede el tamaño máximo permitido (2 MB).";
+        $uploadOk = 0;
+    }
+
+   
+    $check = getimagesize($_FILES["file"]["tmp_name"]);
+    if ($check === false) {
+        echo "Error: El archivo no es una imagen válida.";
+        $uploadOk = 0;
+    }
+
+   
+    $file_extension = strtolower(pathinfo($_FILES["file"]["name"], PATHINFO_EXTENSION));
+    $new_file_name = uniqid() . '.' . $file_extension;
+    $target_file = $target_dir . $new_file_name;
+
+    
+    if ($uploadOk === 1) {
+        if (move_uploaded_file($_FILES["file"]["tmp_name"], $target_file)) {
+            echo "Archivo subido exitosamente: /uploads/" . htmlspecialchars($new_file_name);
+        } else {
+            echo "Error: No se pudo subir el archivo.";
+        }
+    } else {
+        echo "Error: No se pudo completar la subida del archivo.";
+    }
+} else {
+    echo "Error: No se recibió un archivo.";
 }
 ?>
+
 
 </body>
 </html>
