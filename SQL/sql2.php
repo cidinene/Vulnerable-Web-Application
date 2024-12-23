@@ -20,8 +20,8 @@
 	</div>
 
 <?php
-require __DIR__ . '/vendor/autoload.php';
 
+require __DIR__ . '/vendor/autoload.php';
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
@@ -40,30 +40,33 @@ if ($conn->connect_error) {
     die("Error en la conexión a la base de datos: " . $conn->connect_error);
 }
 
+
 if (isset($_POST["submit"])) {
    
     if (isset($_POST["number"]) && is_numeric($_POST["number"])) {
         $number = intval($_POST["number"]); 
-
+        
         
         $stmt = $conn->prepare("SELECT bookname, authorname FROM books WHERE number = ?");
         $stmt->bind_param("i", $number); 
-        $stmt->execute();
+        $stmt->execute(); 
 
         
         $result = $stmt->get_result();
 
+        
         if ($result->num_rows > 0) {
-            
+            // Mostrar cada fila de resultados
             while ($row = $result->fetch_assoc()) {
                 echo "<hr>";
+                
                 echo htmlspecialchars($row['bookname']) . " ----> " . htmlspecialchars($row['authorname']);
             }
         } else {
             echo "No se encontraron resultados.";
         }
 
-        
+       
         $stmt->close();
     } else {
         echo "Por favor, ingrese un número válido.";
@@ -73,6 +76,7 @@ if (isset($_POST["submit"])) {
 
 $conn->close();
 ?>
+
 
 
 </body>
