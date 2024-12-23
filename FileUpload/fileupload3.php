@@ -17,27 +17,60 @@
 </form>
 	</div>
 <?php
+if (isset($_POST["submit"])) {
+   
+    $target_dir = "uploads/";
+    if (!is_dir($target_dir)) {
+        mkdir($target_dir, 0755, true); 
+    }
+    $file_name = basename($_FILES["file"]["name"]);
+    $target_file = $target_dir . $file_name;
 
-// Check if image file is a actual image or fake image
-if(isset($_POST["submit"])) {
-	$target_dir = "uploads/";
-	$target_file = $target_dir . basename($_FILES["file"]["name"]);
-	$uploadOk = 1;
-	$imageFileType = strtolower(pathinfo($target_file,PATHINFO_EXTENSION));
-	$type = $_FILES["file"]["type"];
-	$check = getimagesize($_FILES["file"]["tmp_name"]);
+    $uploadOk = 1;
+    $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+    $allowed_types = ['png', 'gif']; 
+    $max_file_size = 2 * 1024 * 1024; 
 
-	if($check["mime"] == "image/png" || $check["mime"] == "image/gif"){
-		$uploadOk = 1;
-	}else{
-		$uploadOk = 0;
-		echo "Mime?";
-		echo $check["mime"];
-	} 
-  if($uploadOk == 1){
-      move_uploaded_file($_FILES["file"]["tmp_name"], $target_file);
-      echo "File uploaded /uploads/".$_FILES["file"]["name"];
-  }
+    
+    $check = getimagesize($_FILES["file"]["tmp_name"]);
+    if ($check !== false) {
+        if (!in_array($imageFileType, $allowed_types)) {
+            echo "Error: Solo se permiten archivos PNG y GIF.";
+            $uploadOk = 0;
+        }
+
+        
+        if ($_FILES["file"]["size"] > $max_file_size) {
+            echo "Error: El archivo excede el tamaño máximo permitido (2 MB).";
+            $uploadOk = 0;
+        }
+    } else {
+        echo "Error: El archivo no es una imagen válida.";
+        $uploadOk = 0;
+    }
+
+    
+    if (file_exists($target_file)) {
+        echo "Error: Ya existe un archivo con el mismo nombre.";
+        $uploadOk = 0;
+    }
+
+    
+    if ($uploadOk === 1) {
+        
+        $new_file_name = uniqid() . '.' . $imageFileType;
+        $target_file = $target_dir . $new_file_name;
+
+        if (move_uploaded_file($_FILES["file"]["tmp_name"], $target_file)) {
+            echo "Archivo subido exitosamente: " . htmlspecialchars($new_file_name);
+        } else {
+            echo "Error: No se pudo subir el archivo.";
+        }
+    } else {
+        echo "Error: No se pudo subir el archivo por problemas de validación.";
+    }
+} else {
+    echo "Error: No se envió ningún archivo.";
 }
 ?>
 
