@@ -23,49 +23,78 @@
 	</div>
 
 <?php
-	$servername = "localhost";
-	$username = "root";
-	$password = "";
-	$db = "1ccb8097d0e9ce9f154608be60224c7c";
+require __DIR__ . '/vendor/autoload.php';
 
-	// Create connection
-	$conn = new mysqli($servername, $username, $password,$db);
 
-	// Check connection
-	if ($conn->connect_error) {
-	    die("Connection failed: " . $conn->connect_error);
-	} 
-	//echo "Connected successfully";
-	if(isset($_POST["submit"])){
-		$number = $_POST['number'];
-		//You hacked me again?
-		//I updated my code
-		if(strchr($number,"'")){
-			echo "What are you trying to do?<br>";
-			echo "Awesome hacking skillzz<br>";
-			echo "But you can't hack me anymore!";
-			exit;
-		}
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
 
-		$query = "SELECT bookname,authorname FROM books WHERE number =".'$number'; 
-		$result = mysqli_query($conn,$query);
+$servername = $_ENV['DB_SERVERNAME'];
+$username = $_ENV['DB_USERNAME'];
+$password = $_ENV['DB_PASSWORD'];
+$db = $_ENV['DB_DATABASE'];
 
-		if (!$result) { //Check result
-		    $message  = 'Invalid query: ' . mysql_error() . "\n";
-		    $message .= 'Whole query: ' . $query;
-		    die($message);
-		}
 
-		while ($row = mysqli_fetch_assoc($result)) {
-			echo "<hr>";
-		    echo $row['bookname']." ----> ".$row['authorname'];    
-		}
+session_start();
+if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
+    
+    if (isset($_POST['login'])) {
+        $input_username = $_POST['username'];
+        $input_password = $_POST['password'];
 
-		if(mysqli_num_rows($result) <= 0)
-			echo "0 result";
+       
+        if ($input_username === $_ENV['APP_USERNAME'] && password_verify($input_password, $_ENV['APP_PASSWORD'])) {
+            $_SESSION['authenticated'] = true;
+        } else {
+            echo "Invalid credentials.";
+        }
+    }
 
-	}
-?> 
+    
+    if (!isset($_SESSION['authenticated'])) {
+        echo '<form method="POST" action="">
+                <label>Username: </label><input type="text" name="username" required><br>
+                <label>Password: </label><input type="password" name="password" required><br>
+                <input type="submit" name="login" value="Login">
+              </form>';
+        exit;
+    }
+}
+
+
+$conn = new mysqli($servername, $username, $password, $db);
+
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+if (isset($_POST["submit"])) {
+    if (isset($_POST['number']) && is_numeric($_POST['number'])) {
+        $number = intval($_POST['number']); 
+        
+        $stmt = $conn->prepare("SELECT bookname, authorname FROM books WHERE number = ?");
+        $stmt->bind_param("i", $number);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                echo "<hr>";
+                echo htmlspecialchars($row['bookname']) . " ----> " . htmlspecialchars($row['authorname']);
+            }
+        } else {
+            echo "No results found.";
+        }
+
+        $stmt->close();
+    } else {
+        echo "Please enter a valid number.";
+    }
+}
+
+$conn->close();
+?>
 
 </body>
 </html>
